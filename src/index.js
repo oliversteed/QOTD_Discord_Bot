@@ -28,7 +28,7 @@ client.on('interactionCreate', (interaction) => {
     }
 });
 
-const schedule = new CronJob('0 0 16 * * *', () =>{
+const schedule = new CronJob('0 0 17 * * *', () =>{
     postQOTD(client, "Dummy", false);
 });
 
