@@ -1,7 +1,7 @@
 var questionArray = [];
 
 module.exports = (client, question, submit) => {
-    const postChannel = "1325891691319918692"; ///Change this when implementing in main server.
+    const postChannel = "1326235335516229655";
 
     if(submit){
         questionArray.push(question);

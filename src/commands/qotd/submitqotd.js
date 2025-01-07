@@ -13,7 +13,7 @@ module.exports = {
     ],
     callback: (client, interaction) => {
         
-            const voteChannel = "1324000082546135151"; ///Change this when implementing in main server.
+            const voteChannel = "1326235287617146921";
             
             if(interaction.commandName === 'submit_qotd'){
                 const question = interaction.options.get('question')?.value;
