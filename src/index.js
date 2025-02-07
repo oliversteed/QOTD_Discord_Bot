@@ -3,6 +3,7 @@ const {CronJob} = require('cron');
 const {Client, IntentsBitField} = require('discord.js');
 const eventHandler = require('./handlers/eventHandler');
 const postQOTD = require('./utils/postQOTD');
+const {MongoClient, ServerApiVersion} = require('mongodb');
 
 const client = new Client({
     intents: [
@@ -11,6 +12,14 @@ const client = new Client({
         IntentsBitField.Flags.GuildMessages,
         IntentsBitField.Flags.MessageContent,
     ]
+});
+
+const database = new MongoClient(process.env.DB_LINK, {
+    serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+    }
 });
 
 client.on('interactionCreate', (interaction) => {
@@ -28,8 +37,21 @@ client.on('interactionCreate', (interaction) => {
     }
 });
 
+//Connects to MongoDB
+async function run() {
+    try{
+        await database.connect();
+        await database.db("admin").command({ping: 1});
+        console.log("Pinged the database. Successfully connected!")
+    }
+    finally{
+        await database.close();
+    }
+    
+}
+
 const schedule = new CronJob('0 0 10 * * *', () =>{
-    postQOTD(client, "Dummy", false);
+    postQOTD(client, "Dummy", false, database);
 });
 
 schedule.start();

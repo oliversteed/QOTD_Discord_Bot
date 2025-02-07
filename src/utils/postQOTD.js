@@ -1,6 +1,6 @@
 var questionArray = [];
 
-module.exports = (client, question, submit) => {
+module.exports = (client, question, submit, database) => {
     const postChannel = "1326235335516229655";
 
     if(submit){
