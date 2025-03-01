@@ -1,21 +1,31 @@
-var questionArray = [];
-
-module.exports = (client, question, submit, database) => {
+module.exports = async (client, question, submit, database) => {
+    await database.connect();
+    
+    const dbclient = database.db('QOTD');
     const postChannel = "1326235335516229655";
+    const qd = dbclient.collection("Questions");
+    const txt = {
+        "question": question
+    }
 
     if(submit){
-        questionArray.push(question);
+        await qd.insertOne(txt);
     } else{
-        let ranNum = Math.floor(Math.random() * questionArray.length);
-        if(questionArray.length === 0){
+        let questiontopost = await qd.aggregate([
+            { $sample: { size: 1 } },
+        ]).toArray();
+        if(questiontopost[0] == null){
             client.channels.cache.get(postChannel).send({
-                content: 'We have run out of questions... Please submit some more!'
-            })
+                content: "We have run out of questions, please submit some more!"
+            });
             return;
         }
-
-        client.channels.cache.get(postChannel).send({
-            content: `${questionArray.splice(ranNum, 1)}`
+        await client.channels.cache.get(postChannel).send({
+            content: `${JSON.stringify(questiontopost[0].question)}`
         });
+        let query = {_id: questiontopost[0]._id};
+        await qd.deleteOne(query);
     }
+
+    await database.close();
 };

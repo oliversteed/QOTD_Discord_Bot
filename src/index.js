@@ -5,15 +5,6 @@ const eventHandler = require('./handlers/eventHandler');
 const postQOTD = require('./utils/postQOTD');
 const {MongoClient, ServerApiVersion} = require('mongodb');
 
-const client = new Client({
-    intents: [
-        IntentsBitField.Flags.Guilds,
-        IntentsBitField.Flags.GuildMembers,
-        IntentsBitField.Flags.GuildMessages,
-        IntentsBitField.Flags.MessageContent,
-    ]
-});
-
 const database = new MongoClient(process.env.DB_LINK, {
     serverApi: {
         version: ServerApiVersion.v1,
@@ -22,19 +13,14 @@ const database = new MongoClient(process.env.DB_LINK, {
     }
 });
 
-client.on('interactionCreate', (interaction) => {
-    if(!interaction.isButton()) return;
-    let question = interaction.message.content;
-    const selection = interaction.customId;
-    if(selection === "confirm"){
-        postQOTD(client, question, true);
-        interaction.reply(`${question} has been confirmed.`);
-        interaction.message.delete();
-    }
-    else if(selection === "deny"){
-        interaction.reply(`${question} has been denied.`);
-        interaction.message.delete();
-    }
+const client = new Client({
+    intents: [
+        IntentsBitField.Flags.Guilds,
+        IntentsBitField.Flags.GuildMembers,
+        IntentsBitField.Flags.GuildMessages,
+        IntentsBitField.Flags.MessageContent,
+    ],
+    "database" : database
 });
 
 //Connects to MongoDB
@@ -56,6 +42,36 @@ const schedule = new CronJob('0 0 10 * * *', () =>{
 
 schedule.start();
 
+run();
+
 eventHandler(client);
 
 client.login(process.env.TOKEN);
+
+//Handles QOTD rejections and approvals
+client.on('interactionCreate', (interaction) => {
+    if(interaction.isCommand()){
+        let name = interaction.commandName;
+        if(name == "invoke_qotd"){
+            postQOTD(client, "Dummy", false, database);
+            interaction.reply('Forcing an off-schedule QOTD.');
+        }
+    }
+
+    if(!interaction.isButton()) return;
+    let question = interaction.message.content;
+    const selection = interaction.customId;
+    if(selection === "confirm"){
+        postQOTD(client, question, true, database);
+        interaction.reply(`${question} has been confirmed.`);
+        interaction.message.delete();
+    }
+    else if(selection === "deny"){
+        interaction.reply(`${question} has been denied.`);
+        interaction.message.delete();
+    }
+});
+
+function getDatabase(){
+    return database;
+}

@@ -33,7 +33,7 @@ module.exports = {
                     .addComponents(confirm, deny);
                 
                 client.channels.cache.get(voteChannel).send({
-                    content: `"${question}"`,
+                    content: `${question}`,
                     components: [row],
                 });
             }
