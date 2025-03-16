@@ -36,7 +36,7 @@ async function run() {
     
 }
 
-const schedule = new CronJob('0 0 10 * * *', () =>{
+const schedule = new CronJob('0 0 8 * * *', () =>{
     postQOTD(client, "Dummy", false, database);
 });
 
